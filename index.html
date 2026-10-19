@@ -1,260 +1,370 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Awwwards-level minimalist QR code generator tool"
-    />
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Plus Jakarta Sans', 'sans-serif'],
-            },
-            colors: {
-              obsidian: '#09090b',
-              surface: '#121216',
-              subtle: '#27272a',
-            },
-          },
-        },
-      };
-    </script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-      integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <title>QR Code Studio — Minimalist Generator</title>
-    <style>
-      #spinner {
-        display: none;
-      }
-      /* Custom smooth fade and scale utilities */
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      .animate-fade-in {
-        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-    </style>
-  </head>
-  <body class="bg-obsidian text-neutral-100 antialiased min-h-screen selection:bg-white selection:text-black flex flex-col justify-between">
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f4f0e8" />
+  <meta name="description" content="BRUT — a bold, minimalist QR code studio." />
+  <title>BRUT / QR Code Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root {
+      --paper: #f4f0e8;
+      --ink: #171714;
+      --muted: #77756e;
+      --line: #b9b4a8;
+      --acid: #d7ff38;
+      --panel: #e9e4d9;
+      --white: #fffdf7;
+      --shadow: 5px 5px 0 var(--ink);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; color: var(--ink); background-color: var(--paper);
+      background-image: radial-gradient(#c9c2b5 0.65px, transparent 0.65px);
+      background-size: 13px 13px;
+      font-family: "Space Grotesk", sans-serif; min-height: 100vh;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      background: linear-gradient(120deg, rgba(244,240,232,.96), rgba(244,240,232,.76));
+    }
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    button, a, input, select { -webkit-tap-highlight-color: transparent; }
+    .wrap { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--ink);
+      background: rgba(244,240,232,.92); backdrop-filter: blur(12px);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: 20px; }
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 700; letter-spacing: -.07em; font-size: 1.45rem; }
+    .brand-mark { display: grid; place-items: center; width: 31px; height: 31px; background: var(--acid); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); font: 700 12px "Space Mono", monospace; letter-spacing: -.1em; }
+    .nav-meta { font: 700 10px "Space Mono", monospace; text-transform: uppercase; letter-spacing: .12em; }
+    .status { display: flex; align-items: center; gap: 8px; }
+    .status-dot { width: 9px; height: 9px; background: #69a62b; border: 1px solid var(--ink); border-radius: 50%; }
+    .hero { padding: 68px 0 38px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; font: 700 11px "Space Mono", monospace; text-transform: uppercase; letter-spacing: .12em; }
+    .eyebrow::before { content: ""; width: 24px; height: 3px; background: var(--ink); }
+    h1 { margin: 20px 0 18px; max-width: 850px; font-size: clamp(3.5rem, 10vw, 8.8rem); line-height: .83; letter-spacing: -.095em; font-weight: 700; }
+    h1 .accent { position: relative; display: inline-block; z-index: 0; }
+    h1 .accent::after { content: ""; position: absolute; left: 0; right: -.02em; bottom: .04em; height: .24em; background: var(--acid); z-index: -1; transform: rotate(-1.5deg); }
+    .hero-bottom { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-top: 30px; }
+    .hero-copy { max-width: 450px; font-size: 1rem; line-height: 1.65; color: #4f4d47; }
+    .hero-index { font: 700 11px "Space Mono", monospace; text-align: right; line-height: 1.8; white-space: nowrap; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, .82fr); gap: 26px; padding: 20px 0 72px; align-items: start; }
+    .panel { border: 2px solid var(--ink); background: var(--white); box-shadow: var(--shadow); }
+    .panel-head { min-height: 51px; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px; border-bottom: 2px solid var(--ink); background: var(--acid); }
+    .panel-head h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .09em; font-weight: 700; }
+    .mono { font: 700 10px "Space Mono", monospace; text-transform: uppercase; letter-spacing: .08em; }
+    .form-body { padding: 24px; }
+    .field { margin-bottom: 22px; }
+    label, .field-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 9px; font: 700 11px "Space Mono", monospace; text-transform: uppercase; letter-spacing: .06em; }
+    .hint { color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+    input[type="url"], select {
+      display: block; width: 100%; min-height: 50px; border: 2px solid var(--ink); border-radius: 0;
+      background: #f8f5ee; padding: 13px 14px; outline: none; color: var(--ink); transition: box-shadow .18s, background .18s;
+    }
+    input[type="url"]:focus, select:focus { background: white; box-shadow: 4px 4px 0 var(--acid); }
+    .size-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field-note { margin: 9px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .btn {
+      display: inline-flex; justify-content: center; align-items: center; gap: 9px; width: 100%;
+      min-height: 52px; border: 2px solid var(--ink); border-radius: 0; padding: 14px 18px;
+      background: var(--ink); color: white; cursor: pointer; font: 700 11px "Space Mono", monospace;
+      text-transform: uppercase; letter-spacing: .07em; box-shadow: 4px 4px 0 var(--acid);
+      transition: transform .16s, box-shadow .16s, background .16s, color .16s;
+    }
+    .btn:hover { background: var(--acid); color: var(--ink); }
+    .btn:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 var(--acid); }
+    .btn:focus-visible, a:focus-visible { outline: 3px dashed var(--ink); outline-offset: 4px; }
+    .btn.secondary { background: transparent; color: var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+    .btn.secondary:hover { background: var(--acid); }
+    .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .error { display: none; border: 2px solid #a32a1c; background: #fff0eb; color: #8d2418; padding: 11px 13px; margin: 0 0 18px; font-size: 13px; line-height: 1.5; }
+    .preview-panel { position: sticky; top: 96px; }
+    .preview-stage {
+      min-height: 380px; display: grid; place-items: center; padding: 26px; position: relative; overflow: hidden;
+      background-color: #e8e3d8;
+      background-image: linear-gradient(45deg, #d6d0c3 25%, transparent 25%), linear-gradient(-45deg, #d6d0c3 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d6d0c3 75%), linear-gradient(-45deg, transparent 75%, #d6d0c3 75%);
+      background-size: 18px 18px; background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+    }
+    .preview-stage::before, .preview-stage::after { content: ""; position: absolute; width: 28px; height: 28px; border-color: var(--ink); border-style: solid; pointer-events: none; }
+    .preview-stage::before { top: 14px; left: 14px; border-width: 2px 0 0 2px; }
+    .preview-stage::after { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; }
+    .placeholder { text-align: center; max-width: 240px; padding: 28px 12px; }
+    .placeholder-symbol { width: 76px; height: 76px; border: 2px solid var(--ink); background: var(--acid); box-shadow: 5px 5px 0 var(--ink); display: grid; place-items: center; margin: 0 auto 24px; font-size: 34px; font-weight: 700; }
+    .placeholder p { margin: 0; font: 700 11px/1.8 "Space Mono", monospace; text-transform: uppercase; }
+    #qrcode { display: none; position: relative; z-index: 1; padding: 14px; background: white; border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); max-width: 100%; }
+    #qrcode img, #qrcode canvas { display: block; max-width: 100%; height: auto; image-rendering: pixelated; }
+    .preview-info { padding: 16px 18px; border-top: 2px solid var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--white); }
+    .preview-info span { font: 700 10px "Space Mono", monospace; text-transform: uppercase; }
+    .preview-info .muted { color: var(--muted); font-weight: 400; }
+    .features { display: grid; grid-template-columns: repeat(3, 1fr); border: 2px solid var(--ink); margin-top: 28px; background: var(--paper); }
+    .feature { padding: 20px; min-height: 112px; }
+    .feature + .feature { border-left: 2px solid var(--ink); }
+    .feature-num { display: block; font: 700 10px "Space Mono", monospace; color: var(--muted); margin-bottom: 15px; }
+    .feature strong { display: block; font-size: 14px; margin-bottom: 5px; }
+    .feature p { font-size: 12px; line-height: 1.5; color: #68655d; margin: 0; }
+    .footer { border-top: 2px solid var(--ink); padding: 22px 0; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; font: 700 10px "Space Mono", monospace; text-transform: uppercase; letter-spacing: .06em; }
+    .toast { position: fixed; right: 20px; bottom: 20px; max-width: calc(100% - 40px); background: var(--acid); color: var(--ink); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 13px 16px; font: 700 11px "Space Mono", monospace; z-index: 20; display: none; }
+    @keyframes enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { animation: enter .45s cubic-bezier(.2,.7,.2,1) both; }
+    @media (max-width: 800px) {
+      .hero { padding-top: 50px; }
+      .layout { grid-template-columns: 1fr; gap: 30px; }
+      .preview-panel { position: static; }
+      .preview-stage { min-height: 320px; }
+    }
+    @media (max-width: 520px) {
+      .wrap { width: min(100% - 28px, 1160px); }
+      .nav { min-height: 62px; }
+      .nav-meta { font-size: 9px; }
+      .hero { padding: 42px 0 25px; }
+      h1 { font-size: clamp(3.2rem, 17vw, 5.4rem); }
+      .hero-bottom { align-items: start; flex-direction: column; gap: 10px; }
+      .hero-index { text-align: left; }
+      .form-body { padding: 18px; }
+      .features { grid-template-columns: 1fr; }
+      .feature + .feature { border-left: 0; border-top: 2px solid var(--ink); }
+      .feature { min-height: auto; }
+      .button-row { grid-template-columns: 1fr; }
+      .preview-stage { min-height: 290px; padding: 18px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="#" aria-label="BRUT home"><span class="brand-mark">B/</span> BRUT<span style="font-size:.65rem;letter-spacing:.02em">®</span></a>
+      <div class="nav-meta status"><span class="status-dot" aria-hidden="true"></span> Utility no. 001 <span aria-hidden="true">/</span> Ready to scan</div>
+    </div>
+  </header>
 
-    <!-- Header -->
-    <header class="w-full border-b border-neutral-800/60 backdrop-blur-md bg-obsidian/80 sticky top-0 z-50">
-      <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></div>
-          <span class="text-xs uppercase tracking-widest font-semibold text-neutral-400">Studio Utility // 01</span>
-        </div>
-        <div class="text-sm font-medium tracking-tight text-neutral-200">QR Code Matrix</div>
+  <main class="wrap">
+    <section class="hero reveal">
+      <div class="eyebrow">Small tool. Sharp output.</div>
+      <h1>MAKE IT<br><span class="accent">SCANNABLE.</span></h1>
+      <div class="hero-bottom">
+        <p class="hero-copy">A no-nonsense QR generator for links worth sharing. Set your size, make the code, and take it anywhere. Built with purpose. Stripped of the noise.</p>
+        <div class="hero-index">BRUT / TOOLKIT 001<br>EST. MMXXVI<br>01 — 03</div>
       </div>
-    </header>
+    </section>
 
-    <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-6 py-16 w-full my-auto">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        
-        <!-- Left Column: Form & Narrative -->
-        <div class="lg:col-span-7 space-y-8">
-          <div class="space-y-3">
-            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-white">
-              Precision QR Generation.
-            </h1>
-            <p class="text-neutral-400 text-base sm:text-lg max-w-xl font-light leading-relaxed">
-              Transform any destination URL into a scannable, high-resolution matrix instantly. Designed with editorial restraint.
-            </p>
-          </div>
-
-          <form id="generate-form" class="space-y-5 bg-surface p-8 rounded-2xl border border-neutral-800/80 shadow-2xl relative overflow-hidden">
-            <div class="absolute -right-16 -top-16 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div class="space-y-2">
-              <label for="url" class="text-xs uppercase tracking-wider font-semibold text-neutral-400">Destination URL</label>
-              <input
-                id="url"
-                type="url"
-                placeholder="https://example.com"
-                class="w-full bg-obsidian border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-all text-sm"
-              />
+    <section class="layout" aria-label="QR code generator">
+      <div>
+        <section class="panel">
+          <div class="panel-head"><h2>01 / Input parameters</h2><span class="mono">Required fields *</span></div>
+          <form id="generate-form" class="form-body" novalidate>
+            <div id="error" class="error" role="alert"></div>
+            <div class="field">
+              <label for="url">Destination URL <span class="hint">Paste a link</span></label>
+              <input id="url" name="url" type="url" placeholder="https://example.com" autocomplete="url" required />
+              <p class="field-note">Tip: include https:// for the most reliable result.</p>
             </div>
-
-            <div class="space-y-2">
-              <label for="size" class="text-xs uppercase tracking-wider font-semibold text-neutral-400">Matrix Resolution</label>
-              <div class="relative">
-                <select
-                  class="w-full bg-obsidian border border-neutral-800 rounded-xl px-4 py-3.5 text-neutral-100 focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-all text-sm appearance-none cursor-pointer"
-                  name="size"
-                  id="size"
-                >
-                  <option value="100">100 × 100 px</option>
-                  <option value="200">200 × 200 px</option>
-                  <option value="300" selected>300 × 300 px (Recommended)</option>
-                  <option value="400">400 × 400 px</option>
-                  <option value="500">500 × 500 px</option>
-                  <option value="600">600 × 600 px</option>
-                  <option value="700">700 × 700 px</option>
+            <div class="field">
+              <label for="size">Output size <span class="hint">Pixels</span></label>
+              <div class="size-grid">
+                <select id="size" name="size" aria-label="QR code size">
+                  <option value="200">200 × 200</option>
+                  <option value="300" selected>300 × 300</option>
+                  <option value="400">400 × 400</option>
+                  <option value="500">500 × 500</option>
+                  <option value="700">700 × 700</option>
                 </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-neutral-500">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </div>
+                <select id="margin" name="margin" aria-label="Quiet zone">
+                  <option value="2">Compact margin</option>
+                  <option value="4" selected>Standard margin</option>
+                  <option value="8">Wide margin</option>
+                </select>
               </div>
+              <p class="field-note">Choose a size and quiet-zone setting for your intended use.</p>
             </div>
-
-            <button
-              class="w-full bg-white text-black font-semibold rounded-xl py-4 px-6 hover:bg-neutral-200 active:scale-[0.99] transition-all text-sm tracking-wide shadow-lg cursor-pointer mt-2"
-              type="submit"
-            >
-              Generate QR Matrix
-            </button>
+            <button class="btn" type="submit">Generate QR code <span aria-hidden="true">↗</span></button>
+            <div class="button-row">
+              <button class="btn secondary" id="clear-btn" type="button">Clear input ×</button>
+              <button class="btn secondary" id="example-btn" type="button">Try an example +</button>
+            </div>
           </form>
+        </section>
+
+        <div class="features" aria-label="Features">
+          <div class="feature"><span class="feature-num">FEATURE / 01</span><strong>Fast by design</strong><p>Generate a code directly in your browser.</p></div>
+          <div class="feature"><span class="feature-num">FEATURE / 02</span><strong>Ready to export</strong><p>Download a PNG for web or print workflows.</p></div>
+          <div class="feature"><span class="feature-num">FEATURE / 03</span><strong>No account needed</strong><p>Simple utility, no sign-up or dashboard.</p></div>
         </div>
-
-        <!-- Right Column: Interactive Preview Canvas & Output -->
-        <div class="lg:col-span-5 flex flex-col items-center justify-center">
-          <div class="w-full bg-surface border border-neutral-800/80 rounded-2xl p-8 min-h-[380px] flex flex-col items-center justify-center relative shadow-2xl">
-            <div class="absolute inset-0 bg-[radial-gradient(#27272a_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none rounded-2xl"></div>
-
-            <!-- Initial Placeholder Graphic -->
-            <div id="placeholder-graphic" class="text-center space-y-3 z-10">
-              <div class="w-16 h-16 rounded-2xl bg-obsidian border border-neutral-800 flex items-center justify-center mx-auto text-neutral-600">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
-              </div>
-              <p class="text-xs text-neutral-500 tracking-wide uppercase font-medium">Awaiting Input Parameters</p>
-            </div>
-
-            <!-- Spinner -->
-            <div id="spinner" role="status" class="z-10">
-              <svg
-                class="inline w-12 h-12 text-neutral-800 animate-spin fill-white"
-                viewBox="0 0 100 101"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                  fill="currentFill"
-                />
-              </svg>
-              <span class="sr-only">Loading...</span>
-            </div>
-
-            <!-- Generated QR Output Box -->
-            <div id="generated" class="z-10 flex flex-col items-center justify-center w-full">
-              <div id="qrcode" class="p-4 bg-white rounded-xl shadow-inner mb-4 animate-fade-in"></div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="w-full border-t border-neutral-800/60 py-6 text-center text-xs text-neutral-500">
-      <p>&copy; 2026 QR Code Studio. All rights reserved.</p>
-    </footer>
+      <aside class="panel preview-panel" aria-label="QR code preview">
+        <div class="panel-head"><h2>02 / Output preview</h2><span class="mono" id="preview-status">Waiting</span></div>
+        <div class="preview-stage">
+          <div id="placeholder" class="placeholder">
+            <div class="placeholder-symbol" aria-hidden="true">＋</div>
+            <p>Your next destination<br>starts here.</p>
+          </div>
+          <div id="qrcode" aria-label="Generated QR code"></div>
+        </div>
+        <div class="preview-info"><span id="output-size">300 × 300 PX</span><span class="muted" id="output-type">PNG / Not generated</span></div>
+        <div style="padding:18px;background:var(--white);border-top:2px solid var(--ink)">
+          <button class="btn" id="download-btn" type="button" disabled style="opacity:.45;cursor:not-allowed">Download PNG ↓</button>
+          <p class="field-note" id="download-note" style="margin-bottom:0">Generate a QR code to unlock your download.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
 
-    <!-- Script Logic -->
-    <script>
+  <footer class="footer">
+    <div class="wrap footer-inner"><span>© 2026 BRUT Studio</span><span>Less interface. More intent.</span><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top ↑</a></div>
+  </footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
       const form = document.getElementById('generate-form');
-      const qr = document.getElementById('qrcode');
-      const placeholder = document.getElementById('placeholder-graphic');
+      const urlInput = document.getElementById('url');
+      const sizeInput = document.getElementById('size');
+      const marginInput = document.getElementById('margin');
+      const qrContainer = document.getElementById('qrcode');
+      const placeholder = document.getElementById('placeholder');
+      const errorBox = document.getElementById('error');
+      const status = document.getElementById('preview-status');
+      const outputSize = document.getElementById('output-size');
+      const outputType = document.getElementById('output-type');
+      const downloadBtn = document.getElementById('download-btn');
+      const downloadNote = document.getElementById('download-note');
+      const toast = document.getElementById('toast');
+      let toastTimer;
+      let currentUrl = '';
+      let currentSize = 300;
 
-      // Button submit handler
-      const onGenerateSubmit = (e) => {
-        e.preventDefault();
-
-        clearUI();
-
-        const url = document.getElementById('url').value;
-        const size = document.getElementById('size').value;
-
-        // Validate url
-        if (url === '') {
-          alert('Please enter a valid URL');
-        } else {
-          placeholder.style.display = 'none';
-          showSpinner();
-          
-          // Simulate brief professional render delay
-          setTimeout(() => {
-            hideSpinner();
-            generateQRCode(url, size);
-
-            // Generate the save button after the qr code image src is ready
-            setTimeout(() => {
-              const saveUrl = qr.querySelector('img').src;
-              createSaveBtn(saveUrl);
-            }, 50);
-          }, 600);
+      function notify(message) {
+        toast.textContent = message;
+        toast.style.display = 'block';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.style.display = 'none', 2600);
+      }
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = 'block';
+        urlInput.focus();
+      }
+      function clearError() {
+        errorBox.textContent = '';
+        errorBox.style.display = 'none';
+      }
+      function normalizeUrl(value) {
+        const trimmed = value.trim();
+        if (!trimmed) return null;
+        const candidate = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed) ? trimmed : `https://${trimmed}`;
+        try {
+          const parsed = new URL(candidate);
+          if (!['http:', 'https:'].includes(parsed.protocol)) return null;
+          return parsed.href;
+        } catch {
+          return null;
         }
-      };
-
-      // Generate QR code using qrcode.js
-      const generateQRCode = (url, size) => {
-        new QRCode('qrcode', {
-          text: url,
-          width: parseInt(size) > 300 ? 300 : parseInt(size), // responsive clamp in view container
-          height: parseInt(size) > 300 ? 300 : parseInt(size),
+      }
+      function getQrImage() {
+        const canvas = qrContainer.querySelector('canvas');
+        if (canvas) return canvas.toDataURL('image/png');
+        const image = qrContainer.querySelector('img');
+        return image ? image.src : null;
+      }
+      function renderCode(value, size) {
+        if (typeof QRCode === 'undefined') {
+          showError('The QR library could not load. Check your connection and refresh the page.');
+          status.textContent = 'Library error';
+          return;
+        }
+        qrContainer.innerHTML = '';
+        qrContainer.style.display = 'block';
+        qrContainer.style.padding = `${Number(marginInput.value) * 3}px`;
+        placeholder.style.display = 'none';
+        new QRCode(qrContainer, {
+          text: value,
+          width: size,
+          height: size,
+          colorDark: '#171714',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
         });
-      };
-
-      // Clear QR code and save button
-      const clearUI = () => {
-        qr.innerHTML = '';
-        const saveBtn = document.getElementById('save-link');
-        if (saveBtn) {
-          saveBtn.remove();
+        currentUrl = value;
+        currentSize = size;
+        status.textContent = 'Generated';
+        outputSize.textContent = `${size} × ${size} PX`;
+        outputType.textContent = 'PNG / Ready';
+        downloadBtn.disabled = false;
+        downloadBtn.style.opacity = '1';
+        downloadBtn.style.cursor = 'pointer';
+        downloadNote.textContent = 'Your code is ready. Scan-test it before printing.';
+        qrContainer.classList.remove('reveal');
+        void qrContainer.offsetWidth;
+        qrContainer.classList.add('reveal');
+      }
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        clearError();
+        const normalized = normalizeUrl(urlInput.value);
+        if (!normalized) {
+          showError('Enter a valid website URL, such as https://example.com.');
+          return;
         }
-        placeholder.style.display = 'block';
-      };
-
-      // Show spinner
-      const showSpinner = () => {
-        const spinner = document.getElementById('spinner');
-        spinner.style.display = 'block';
-      };
-
-      // Hide spinner
-      const hideSpinner = () => {
-        const spinner = document.getElementById('spinner');
-        spinner.style.display = 'none';
-      };
-
-      // Create save button to download QR code as image
-      const createSaveBtn = (saveUrl) => {
+        const size = Number(sizeInput.value);
+        status.textContent = 'Generating';
+        renderCode(normalized, size);
+      });
+      downloadBtn.addEventListener('click', () => {
+        if (!currentUrl) {
+          notify('Generate a code first.');
+          return;
+        }
+        const dataUrl = getQrImage();
+        if (!dataUrl) {
+          notify('Could not prepare the image. Please generate again.');
+          return;
+        }
         const link = document.createElement('a');
-        link.id = 'save-link';
-        link.className =
-          'w-full bg-neutral-800 hover:bg-neutral-700 text-white font-medium py-3 px-4 rounded-xl text-center text-xs uppercase tracking-wider transition-all animate-fade-in block mt-2 border border-neutral-700';
-        link.href = saveUrl;
-        link.download = 'qrcode.png';
-        link.innerHTML = 'Download Matrix Image';
-        document.getElementById('generated').appendChild(link);
-      };
-
-      hideSpinner();
-      form.addEventListener('submit', onGenerateSubmit);
-    </script>
-  </body>
+        link.href = dataUrl;
+        link.download = `brut-qr-${currentSize}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        notify('PNG download started.');
+      });
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        form.reset();
+        clearError();
+        qrContainer.innerHTML = '';
+        qrContainer.style.display = 'none';
+        placeholder.style.display = 'block';
+        currentUrl = '';
+        status.textContent = 'Waiting';
+        outputSize.textContent = `${sizeInput.value} × ${sizeInput.value} PX`;
+        outputType.textContent = 'PNG / Not generated';
+        downloadBtn.disabled = true;
+        downloadBtn.style.opacity = '.45';
+        downloadBtn.style.cursor = 'not-allowed';
+        downloadNote.textContent = 'Generate a QR code to unlock your download.';
+        notify('Workspace cleared.');
+      });
+      document.getElementById('example-btn').addEventListener('click', () => {
+        urlInput.value = 'https://example.com';
+        urlInput.focus();
+        notify('Example URL added.');
+      });
+      sizeInput.addEventListener('change', () => {
+        outputSize.textContent = `${sizeInput.value} × ${sizeInput.value} PX`;
+      });
+    })();
+  </script>
+</body>
 </html>
